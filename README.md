@@ -1,20 +1,24 @@
 # Alert Enrichment Service
 
-**One alert in. Full Kubernetes context out. One Slack message.**
+**Alertmanager tells you *what* fired. This tells you *why* — and puts the whole story in one Slack message.**
 
+[![ci](https://github.com/neha1301/alertbrief/actions/workflows/ci.yml/badge.svg)](https://github.com/neha1301/alertbrief/actions/workflows/ci.yml)
+[![e2e](https://github.com/neha1301/alertbrief/actions/workflows/e2e.yml/badge.svg)](https://github.com/neha1301/alertbrief/actions/workflows/e2e.yml)
 ![tests](https://img.shields.io/badge/tests-75%20passing-brightgreen)
-![coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)
+![coverage](https://img.shields.io/badge/coverage-91.34%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-Alertmanager tells you **what** fired. It rarely tells you **why**. A
-`PodCrashLooping` webhook contains a pod name and a runbook link, so the first
-five minutes of every incident are spent running the same `kubectl` commands.
+I built this because I was tired of watching on-call engineers do the same five
+`kubectl` commands at 3 a.m. A raw `PodCrashLooping` webhook gives you a pod name
+and a runbook link. The *reason* is scattered across pod status, restart counts,
+rollout history, `--previous` logs and warning events — so the first five minutes
+of every incident are spent gathering context instead of fixing the problem.
 
 This service sits between Alertmanager and Slack. It resolves the alert to a
-workload, reads pod state, restart counts, rollout status and the **previous**
-container's logs, then publishes a single Slack Block Kit message with a
-pre-filled silence link and a copy-paste `kubectl` command.
+workload, reads live cluster state inside a **4-second budget**, collapses
+duplicates, and publishes **one** Block Kit message with a pre-filled silence
+link and a copy-paste `kubectl` command.
 
 <img src="docs/slack-preview.png" alt="Slack message with pod status, previous container logs, events and action buttons" width="780">
 
@@ -22,6 +26,28 @@ pre-filled silence link and a copy-paste `kubectl` command.
 crash-looping `checkout` pod, three alerts about it, one message.</sub>
 
 ---
+
+## What changes at 3 a.m.
+
+| | Before | After |
+| --- | --- | --- |
+| Notification | three separate pings for one broken pod | **one message — ×3 alerts merged** |
+| Context | pod name + runbook link | status, restarts, node, owner, rollout, previous logs, events |
+| First action | open a laptop, run five `kubectl` commands | click **Silence** or copy one command |
+| Retry after timeout | duplicate Slack message | `202 sent=0, suppressed=1` |
+| Flapping pod | a webhook every cycle | one message per incident key per `DEDUP_TTL_SECONDS` |
+
+## Receipts
+
+| Signal | Number |
+| --- | --- |
+| Test suite | **75 passing**, 1 live-cluster e2e |
+| Branch coverage | **91.34%** (85% gate, enforced in CI) |
+| Enrichment budget | **4s** — partial context beats a dropped alert |
+| Per-call Kubernetes timeout | **1.5s**, hard limit |
+| Alerts per incident | **3 → 1** Slack message |
+| Dedup backends | memory + Redis (atomic Lua reservation) |
+| CI matrix | Python **3.12** and **3.13** |
 
 ## Why not just Alertmanager grouping?
 
@@ -76,7 +102,7 @@ The interesting parts are deliberate:
 
 - **Reserve before enrich.** A retried webhook cannot produce a second Slack
   message, and a crashed replica cannot block an alert forever (stale
-  reservations are reclaimed).
+  reservations are reclaimed after `DEDUP_STALE_RESERVATION_SECONDS`).
 - **Bounded enrichment, never a dropped alert.** Sync Kubernetes calls run in
   worker threads with hard timeouts. If logs are forbidden, the pod was deleted
   or the budget expires, the alert is still sent with partial context.
@@ -242,7 +268,7 @@ kubectl create secret generic alert-enrichment-secrets -n alerting \
 
 helm upgrade --install alert-enrichment deploy/helm/alert-enrichment \
   -n alerting --create-namespace \
-  --set image.repository=ghcr.io/<your-org>/alert-enrichment \
+  --set image.repository=ghcr.io/neha1301/alert-enrichment \
   --set image.tag=0.1.0 \
   --set slack.existingSecret=alert-enrichment-secrets
 ```
@@ -332,6 +358,17 @@ Known limits and the ordered roadmap are in [DESIGN.md](DESIGN.md):
 3. replace per-alert API reads with a shared informer cache,
 4. suggest Alertmanager inhibition rules alongside the pre-filled silence.
 
+## Built by
+
+**Neha Sharma** — SRE and DevOps Engineer II at BharatPe. Three years running
+production Kubernetes across AWS and GCP: 30+ zero-downtime environment
+upgrades, centralized SRE alerting, a proprietary → open-source monitoring
+migration, and tooling that cut incident triage time by ~70%. This project is
+the alerting side of that same work: fewer pages, more context, faster fixes.
+
+- GitHub: [@neha1301](https://github.com/neha1301)
+- LinkedIn: [neha1301](https://linkedin.com/in/neha1301)
+- Portfolio: [neha-sharma.vercel.app](https://neha-sharma.vercel.app)
 
 ## License
 
