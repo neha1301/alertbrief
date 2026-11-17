@@ -26,6 +26,18 @@ def test_webhook_mode_requires_a_webhook_url() -> None:
         build_publisher(settings(slack_mode="webhook"))
 
 
+def test_webhook_mode_rejects_a_blank_secret_value() -> None:
+    with pytest.raises(AlertEnrichmentError, match="SLACK_WEBHOOK_URL"):
+        build_publisher(settings(slack_mode="webhook", slack_webhook_url="   "))
+
+
+def test_webhook_mode_rejects_a_url_without_a_scheme() -> None:
+    with pytest.raises(AlertEnrichmentError, match="http"):
+        build_publisher(
+            settings(slack_mode="webhook", slack_webhook_url="hooks.slack.com/services/x")
+        )
+
+
 def test_webhook_mode_builds_the_real_publisher() -> None:
     publisher = build_publisher(
         settings(slack_mode="webhook", slack_webhook_url="https://hooks.slack.test/x")
@@ -40,6 +52,13 @@ def test_auto_mode_picks_webhook_when_url_is_present() -> None:
 
     assert resolved.resolved_slack_mode() == "webhook"
     assert resolved.slack_enabled() is True
+
+
+def test_auto_mode_ignores_a_blank_secret_value() -> None:
+    resolved = settings(slack_webhook_url="  ")
+
+    assert resolved.resolved_slack_mode() == "sink"
+    assert resolved.slack_webhook_value() == ""
 
 
 def test_memory_dedup_is_the_default() -> None:

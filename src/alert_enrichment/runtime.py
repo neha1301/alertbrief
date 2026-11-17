@@ -38,10 +38,15 @@ def build_cluster(settings: Settings) -> ClusterClient:
 def build_publisher(settings: Settings) -> Publisher:
     mode = settings.resolved_slack_mode()
     if mode == "webhook":
-        if settings.slack_webhook_url is None:
+        url = settings.slack_webhook_value()
+        if not url:
             raise AlertEnrichmentError("SLACK_MODE=webhook but SLACK_WEBHOOK_URL is not set")
+        if not url.startswith(("http://", "https://")):
+            raise AlertEnrichmentError(
+                "SLACK_WEBHOOK_URL must start with http:// or https://"
+            )
         return SlackPublisher(
-            settings.slack_webhook_url.get_secret_value(),
+            url,
             timeout=settings.slack_timeout_seconds,
             max_retries=settings.slack_max_retries,
         )

@@ -51,7 +51,18 @@ class Settings(BaseSettings):
     def slack_enabled(self) -> bool:
         return self.slack_mode != "sink"
 
+    def slack_webhook_value(self) -> str:
+        """Return the configured webhook, treating blank values as unset.
+
+        Kubernetes Secrets created from an empty literal are ``""`` rather than
+        absent, so truthiness of ``SecretStr`` alone is not enough.
+        """
+
+        if self.slack_webhook_url is None:
+            return ""
+        return self.slack_webhook_url.get_secret_value().strip()
+
     def resolved_slack_mode(self) -> Literal["webhook", "sink"]:
         if self.slack_mode != "auto":
             return self.slack_mode
-        return "webhook" if self.slack_webhook_url else "sink"
+        return "webhook" if self.slack_webhook_value() else "sink"

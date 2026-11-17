@@ -2,7 +2,7 @@
 
 **One alert in. Full Kubernetes context out. One Slack message.**
 
-![tests](https://img.shields.io/badge/tests-72%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-75%20passing-brightgreen)
 ![coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue)
 ![license](https://img.shields.io/badge/license-MIT-blue)
@@ -100,14 +100,14 @@ src/alert_enrichment/
 demo/             kind demo, payload builder, preview renderer
 deploy/helm/      production chart (RBAC, probes, PDB, secret handling)
 deploy/alertmanager/  receiver config + Prometheus rules
-tests/            72 unit/integration tests + live-cluster e2e
+tests/            75 unit/integration tests + live-cluster e2e
 ```
 
 ## Try it in 60 seconds
 
 ```bash
 make install     # Python 3.13 venv + editable install
-make check       # ruff + mypy --strict + 72 tests with coverage
+make check       # ruff + mypy --strict + 75 tests with coverage
 ```
 
 Run it locally against whatever kubeconfig you have:
@@ -299,7 +299,7 @@ make check    # ruff, mypy --strict, pytest with an 85% branch-coverage gate
 make e2e      # live kind cluster + real CrashLoopBackOff (RUN_E2E=1)
 ```
 
-The suite currently has **72 passing tests, 1 skipped e2e test and 91.27%
+The suite currently has **75 passing tests, 1 skipped e2e test and 91.34%
 coverage**. It covers hostile log input (ANSI, mrkdwn, 400 × 600-char lines),
 Slack limits, partial enrichment, previous-log fallback, dedup races, Redis
 reservations, publish retries and 429 handling.
