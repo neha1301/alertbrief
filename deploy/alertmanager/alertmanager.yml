@@ -1,0 +1,15 @@
+# Alertmanager config for the docker-compose / kind demo.
+# In production, add this receiver to your existing Alertmanager route tree.
+route:
+  receiver: alert-enrichment
+  group_by: [alertname, namespace, pod]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 4h
+
+receivers:
+  - name: alert-enrichment
+    webhook_configs:
+      - url: http://alert-enrichment:8080/webhook/alertmanager
+        send_resolved: true
+        max_alerts: 10

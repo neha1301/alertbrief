@@ -1,0 +1,7 @@
+2026-11-17T17:58:41.101Z INFO  server starting on :8080
+2026-11-17T17:58:41.220Z DEBUG connecting to postgres://db:5432/checkout
+2026-11-17T17:58:42.998Z ERROR db pool exhausted: timeout after 5s
+2026-11-17T17:58:43.001Z FATAL failed to acquire connection
+    at pool.acquire (db/pool.py:88)
+    at handle_request (server.py:41)
+2026-11-17T17:58:44.000Z INFO shutting down

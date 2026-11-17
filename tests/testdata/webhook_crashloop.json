@@ -1,0 +1,89 @@
+{
+  "version": "4",
+  "groupKey": "{}/{severity=\"warning\"}:{alertname=~\"Pod.*|High.*\"}",
+  "truncatedAlerts": 0,
+  "status": "firing",
+  "receiver": "alert-enrichment",
+  "groupLabels": {
+    "namespace": "payments"
+  },
+  "commonLabels": {
+    "namespace": "payments",
+    "pod": "checkout-7d9f8b6c5-x2vqn",
+    "cluster": "prod-blr-1",
+    "severity": "warning"
+  },
+  "commonAnnotations": {
+    "runbook_url": "https://runbooks.example.com/payments/checkout-crashloop"
+  },
+  "externalURL": "https://alertmanager.example.com",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "PodCrashLooping",
+        "namespace": "payments",
+        "pod": "checkout-7d9f8b6c5-x2vqn",
+        "cluster": "prod-blr-1",
+        "severity": "warning",
+        "deployment": "checkout"
+      },
+      "annotations": {
+        "summary": "Pod checkout-7d9f8b6c5-x2vqn is restarting more than 5 times in 15 minutes",
+        "runbook_url": "https://runbooks.example.com/payments/checkout-crashloop"
+      },
+      "startsAt": "2026-11-17T17:58:50Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://prometheus.example.com/graph?g0.expr=rate(kube_pod_container_status_restarts_total%5B15m%5D)%20%3E%200",
+      "fingerprint": "3f9c1a2b4d5e6f70"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "PodNotReady",
+        "namespace": "payments",
+        "pod": "checkout-7d9f8b6c5-x2vqn",
+        "cluster": "prod-blr-1",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "Pod checkout-7d9f8b6c5-x2vqn has been unready for 10 minutes"
+      },
+      "startsAt": "2026-11-17T17:59:10Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "fingerprint": "8a7b6c5d4e3f2a10"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "HighRestartCount",
+        "namespace": "payments",
+        "pod": "checkout-7d9f8b6c5-x2vqn",
+        "cluster": "prod-blr-1",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "Container checkout restarted 12 times in the last hour"
+      },
+      "startsAt": "2026-11-17T18:01:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "fingerprint": "1122334455667788"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "KubePodNotReady",
+        "namespace": "payments",
+        "pod": "checkout-7d9f8b6c5-x2vqn",
+        "cluster": "prod-blr-1",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "Pod is not ready"
+      },
+      "startsAt": "2026-11-17T18:02:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "fingerprint": "99aabbccddeeff00"
+    }
+  ]
+}

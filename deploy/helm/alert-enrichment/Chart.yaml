@@ -1,0 +1,14 @@
+apiVersion: v2
+name: alert-enrichment
+description: Alertmanager webhook enrichment for Kubernetes, rendered as one actionable Slack message
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.25.0-0"
+keywords:
+  - alertmanager
+  - slack
+  - sre
+  - kubernetes
+sources:
+  - https://github.com/your-org/alert-enrichment-service

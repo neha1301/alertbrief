@@ -1,0 +1,74 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "checkout-7d9f8b6c5-x2vqn",
+    "namespace": "payments",
+    "creationTimestamp": "2026-11-17T16:02:11Z",
+    "labels": {
+      "app": "checkout",
+      "pod-template-hash": "7d9f8b6c5"
+    },
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "kind": "ReplicaSet",
+        "name": "checkout-7d9f8b6c5",
+        "uid": "0b6f1c1e-4c2a-4d1e-9b1a-1f7a2c9e5d10",
+        "controller": true,
+        "blockOwnerDeletion": true
+      }
+    ]
+  },
+  "spec": {
+    "nodeName": "ip-10-0-3-14.ec2.internal",
+    "containers": [
+      {
+        "name": "checkout",
+        "image": "registry.example.com/payments/checkout:2.14.1",
+        "ports": [{ "containerPort": 8080, "protocol": "TCP" }],
+        "resources": {
+          "requests": { "cpu": "100m", "memory": "128Mi" },
+          "limits": { "memory": "256Mi" }
+        }
+      }
+    ]
+  },
+  "status": {
+    "phase": "Running",
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "False",
+        "reason": "ContainersNotReady",
+        "message": "containers with unready status: [checkout]"
+      }
+    ],
+    "containerStatuses": [
+      {
+        "name": "checkout",
+        "image": "registry.example.com/payments/checkout:2.14.1",
+        "imageID": "registry.example.com/payments/checkout@sha256:6f1d",
+        "containerID": "containerd://9c2b",
+        "ready": false,
+        "restartCount": 12,
+        "started": false,
+        "state": {
+          "waiting": {
+            "reason": "CrashLoopBackOff",
+            "message": "back-off 5m0s restarting failed container=checkout pod=checkout-7d9f8b6c5-x2vqn_payments"
+          }
+        },
+        "lastState": {
+          "terminated": {
+            "exitCode": 1,
+            "reason": "Error",
+            "startedAt": "2026-11-17T17:58:41Z",
+            "finishedAt": "2026-11-17T17:58:44Z",
+            "containerID": "containerd://a1c4"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "checkout",
+    "namespace": "payments",
+    "generation": 14
+  },
+  "spec": {
+    "replicas": 3,
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "checkout",
+            "image": "registry.example.com/payments/checkout:2.14.1"
+          }
+        ]
+      }
+    }
+  },
+  "status": {
+    "observedGeneration": 14,
+    "replicas": 3,
+    "updatedReplicas": 3,
+    "readyReplicas": 3,
+    "availableReplicas": 3,
+    "conditions": [
+      {
+        "type": "Available",
+        "status": "True",
+        "reason": "MinimumReplicasAvailable",
+        "lastUpdateTime": "2026-11-17T16:00:30Z"
+      },
+      {
+        "type": "Progressing",
+        "status": "True",
+        "reason": "NewReplicaSetAvailable",
+        "message": "ReplicaSet \"checkout-7d9f8b6c5\" has successfully progressed.",
+        "lastUpdateTime": "2026-11-17T16:01:02Z"
+      }
+    ]
+  }
+}

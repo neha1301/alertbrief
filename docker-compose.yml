@@ -1,0 +1,39 @@
+services:
+  alert-enrichment:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SLACK_MODE: sink
+      SLACK_SINK_PATH: /data/slack-sink.jsonl
+      KUBERNETES_IN_CLUSTER: "false"
+      KUBECONFIG: /kube/config
+      ALERTMANAGER_URL: http://localhost:9093
+      LOG_JSON: "false"
+    volumes:
+      - ${HOME}/.kube:/kube:ro
+      - ./var:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.external-url=http://localhost:9093
+    volumes:
+      - ./deploy/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    depends_on:
+      alert-enrichment:
+        condition: service_healthy
+
+# Try it:
+#   docker compose up -d --build
+#   curl -X POST localhost:9093/api/v2/alerts -H 'content-type: application/json' --data @var/payload.json
+#   cat var/slack-sink.jsonl | python demo/render_sink.py /dev/stdin --html var/slack-preview.html

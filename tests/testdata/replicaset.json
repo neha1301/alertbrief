@@ -1,0 +1,36 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "ReplicaSet",
+  "metadata": {
+    "name": "checkout-7d9f8b6c5",
+    "namespace": "payments",
+    "generation": 1,
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "name": "checkout",
+        "uid": "aa11bb22-cc33-dd44-ee55-ff6677889900",
+        "controller": true
+      }
+    ]
+  },
+  "spec": {
+    "replicas": 3,
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "checkout",
+            "image": "registry.example.com/payments/checkout:2.14.1"
+          }
+        ]
+      }
+    }
+  },
+  "status": {
+    "replicas": 3,
+    "readyReplicas": 2,
+    "availableReplicas": 2
+  }
+}

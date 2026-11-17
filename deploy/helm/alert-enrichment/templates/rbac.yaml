@@ -1,0 +1,38 @@
+{{- if .Values.rbac.create -}}
+# Least privilege: read-only on exactly the objects the enricher touches.
+# No pod exec, no secrets, no writes anywhere in the cluster.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "alert-enrichment.fullname" . }}
+  labels:
+    {{- include "alert-enrichment.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "alert-enrichment.fullname" . }}
+  labels:
+    {{- include "alert-enrichment.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "alert-enrichment.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "alert-enrichment.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

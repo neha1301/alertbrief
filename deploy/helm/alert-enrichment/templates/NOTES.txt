@@ -1,0 +1,25 @@
+1. Point Alertmanager at this service:
+
+   route:
+     receiver: alert-enrichment
+     group_by: [alertname, namespace, pod]
+     repeat_interval: 4h
+   receivers:
+     - name: alert-enrichment
+       webhook_configs:
+         - url: http://{{ include "alert-enrichment.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}/webhook/alertmanager
+           send_resolved: true
+           max_alerts: {{ .Values.enrichment.maxAlertsPerRequest }}
+
+2. Verify:
+
+   kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "alert-enrichment.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+   curl -s localhost:{{ .Values.service.port }}/readyz
+
+3. Preview a message without Slack (safe in production too):
+
+   curl -s -X POST localhost:{{ .Values.service.port }}/webhook/alertmanager?dry_run=true \
+     -H 'content-type: application/json' --data @alert.json | jq .messages[0].blocks
+
+Slack mode: {{ .Values.slack.mode }}
+Dedup backend: {{ .Values.dedup.backend }}

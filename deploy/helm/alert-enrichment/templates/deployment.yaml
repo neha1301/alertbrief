@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "alert-enrichment.fullname" . }}
+  labels:
+    {{- include "alert-enrichment.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "alert-enrichment.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "alert-enrichment.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "alert-enrichment.serviceAccountName" . }}
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: alert-enrichment
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: SLACK_MODE
+              value: {{ .Values.slack.mode | quote }}
+            - name: SLACK_SINK_PATH
+              value: {{ .Values.slack.sinkPath | quote }}
+            {{- if ne .Values.slack.mode "sink" }}
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "alert-enrichment.secretName" . }}
+                  key: {{ .Values.slack.existingSecretKey }}
+            {{- end }}
+            - name: DEDUP_BACKEND
+              value: {{ .Values.dedup.backend | quote }}
+            - name: DEDUP_TTL_SECONDS
+              value: {{ .Values.dedup.ttlSeconds | quote }}
+            - name: DEDUP_STALE_RESERVATION_SECONDS
+              value: {{ .Values.dedup.staleReservationSeconds | quote }}
+            {{- if eq .Values.dedup.backend "redis" }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "alert-enrichment.secretName" . }}
+                  key: {{ .Values.dedup.existingSecretKey }}
+            {{- end }}
+            - name: KUBERNETES_IN_CLUSTER
+              value: {{ .Values.kubernetes.inCluster | quote }}
+            - name: ENRICHMENT_BUDGET_SECONDS
+              value: {{ .Values.enrichment.budgetSeconds | quote }}
+            - name: K8S_REQUEST_TIMEOUT_SECONDS
+              value: {{ .Values.enrichment.requestTimeoutSeconds | quote }}
+            - name: LOG_TAIL_LINES
+              value: {{ .Values.enrichment.logTailLines | quote }}
+            - name: MAX_ERROR_LINES
+              value: {{ .Values.enrichment.maxErrorLines | quote }}
+            - name: MAX_LOG_CONTAINERS
+              value: {{ .Values.enrichment.maxLogContainers | quote }}
+            - name: MAX_ALERTS_PER_REQUEST
+              value: {{ .Values.enrichment.maxAlertsPerRequest | quote }}
+            - name: MAX_CONCURRENT_ENRICHMENTS
+              value: {{ .Values.enrichment.maxConcurrent | quote }}
+            - name: ALERTMANAGER_URL
+              value: {{ .Values.links.alertmanagerUrl | quote }}
+            - name: GRAFANA_URL
+              value: {{ .Values.links.grafanaUrl | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.logging.level | quote }}
+            - name: LOG_JSON
+              value: {{ .Values.logging.json | quote }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      terminationGracePeriodSeconds: 20
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

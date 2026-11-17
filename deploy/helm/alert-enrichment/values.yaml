@@ -1,0 +1,80 @@
+# One replica keeps the zero-dependency in-memory dedup store correct.
+# Before scaling up, switch dedup.backend to "redis" (see README).
+replicaCount: 1
+
+image:
+  repository: ghcr.io/your-org/alert-enrichment
+  tag: ""  # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+rbac:
+  create: true
+
+slack:
+  # webhook: real Slack delivery. sink: write the payload to disk (demo/CI).
+  mode: webhook
+  # Prefer an existing secret in production (External Secrets, Vault, SOPS).
+  existingSecret: ""
+  existingSecretKey: SLACK_WEBHOOK_URL
+  # Plain value is only for local testing; it lands in the release secret.
+  webhookUrl: ""
+  sinkPath: /tmp/slack-sink.jsonl
+
+dedup:
+  backend: memory  # memory | redis
+  ttlSeconds: 600
+  staleReservationSeconds: 30
+  existingSecretKey: REDIS_URL
+  redisUrl: ""
+
+kubernetes:
+  inCluster: true
+
+enrichment:
+  budgetSeconds: 4
+  requestTimeoutSeconds: 1.5
+  logTailLines: 80
+  maxErrorLines: 15
+  maxLogContainers: 3
+  maxAlertsPerRequest: 10
+  maxConcurrent: 4
+
+links:
+  alertmanagerUrl: ""
+  grafanaUrl: ""
+
+logging:
+  level: INFO
+  json: true
+
+service:
+  type: ClusterIP
+  port: 8080
+
+podAnnotations: {}
+podLabels: {}
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+podDisruptionBudget:
+  # Enable with replicaCount >= 2, otherwise minAvailable blocks node drains.
+  enabled: false
+  minAvailable: 1
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1,0 +1,43 @@
+[
+  {
+    "metadata": {
+      "name": "checkout-7d9f8b6c5-x2vqn.17c1a0e1",
+      "namespace": "payments",
+      "creationTimestamp": "2026-11-17T18:00:05Z"
+    },
+    "involvedObject": {
+      "kind": "Pod",
+      "name": "checkout-7d9f8b6c5-x2vqn",
+      "namespace": "payments"
+    },
+    "type": "Warning",
+    "reason": "BackOff",
+    "message": "Back-off restarting failed container checkout in pod checkout-7d9f8b6c5-x2vqn_payments",
+    "count": 7,
+    "lastTimestamp": "2026-11-17T18:04:00Z"
+  },
+  {
+    "metadata": {
+      "name": "checkout-7d9f8b6c5-x2vqn.17c1a0e2",
+      "namespace": "payments",
+      "creationTimestamp": "2026-11-17T17:59:10Z"
+    },
+    "type": "Normal",
+    "reason": "Pulled",
+    "message": "Container image \"registry.example.com/payments/checkout:2.14.1\" already present on machine",
+    "count": 3,
+    "lastTimestamp": "2026-11-17T17:59:10Z"
+  },
+  {
+    "metadata": {
+      "name": "checkout-7d9f8b6c5-x2vqn.17c1a0e3",
+      "namespace": "payments",
+      "creationTimestamp": "2026-11-17T18:03:00Z"
+    },
+    "type": "Warning",
+    "reason": "Unhealthy",
+    "message": "Readiness probe failed: Get \"http://10.0.3.41:8080/healthz\": dial tcp 10.0.3.41:8080: connect: connection refused",
+    "count": 4,
+    "lastTimestamp": "2026-11-17T18:03:58Z"
+  }
+]
