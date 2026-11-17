@@ -332,27 +332,6 @@ Known limits and the ordered roadmap are in [DESIGN.md](DESIGN.md):
 3. replace per-alert API reads with a shared informer cache,
 4. suggest Alertmanager inhibition rules alongside the pre-filled silence.
 
-## Publishing this repository
-
-The code is ready; only the placeholders need your GitHub details:
-
-1. Replace `ghcr.io/your-org/alert-enrichment` in
-   `deploy/helm/alert-enrichment/values.yaml` and the `sources` entry in
-   `Chart.yaml` with your repository URL.
-2. Create an empty repository on GitHub (no README, no `.gitignore`).
-3. Push:
-
-   ```bash
-   git add -A
-   git commit -m "feat: Alertmanager to Slack enrichment service"
-   git remote add origin git@github.com:<your-user>/<your-repo>.git
-   git push -u origin main
-   ```
-
-4. After the first CI run, replace the static tests/coverage badges with your
-   live workflow badge URLs if you prefer.
-5. Optional: record a 30-second GIF of `make demo` and link it next to the
-   screenshot.
 
 ## License
 
